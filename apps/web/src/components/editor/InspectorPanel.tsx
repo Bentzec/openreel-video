@@ -842,28 +842,46 @@ export const InspectorPanel: React.FC = () => {
         ) : selectedClip ? (
           <InspectorTabErrorBoundary key={clipId}>
             <div className="space-y-4">
-              {tabIds.includes("transform") && (
-                <TransformTab
-                  clipId={clipId}
-                  clipType={clipType}
-                  selectedClip={selectedClip}
-                  showTransformControls={showTransformControls}
-                  showVideoControls={showVideoControls}
-                  transform={transform}
-                  canvasWidth={project.settings.width}
-                  canvasHeight={project.settings.height}
-                  handleTransformChange={handleTransformChange}
-                />
-              )}
+              {/* For text clips the Style tab holds the copy itself, so it leads.
+                  Transform is a long section, and pushing the text field below it
+                  buries the one control a new text clip actually needs. Every
+                  other clip type keeps Transform first. */}
+              {(() => {
+                const transformTab = tabIds.includes("transform") ? (
+                  <TransformTab
+                    clipId={clipId}
+                    clipType={clipType}
+                    selectedClip={selectedClip}
+                    showTransformControls={showTransformControls}
+                    showVideoControls={showVideoControls}
+                    transform={transform}
+                    canvasWidth={project.settings.width}
+                    canvasHeight={project.settings.height}
+                    handleTransformChange={handleTransformChange}
+                  />
+                ) : null;
 
-              {tabIds.includes("style") && (
-                <StyleTab
-                  clipId={clipId}
-                  showTextSection={showTextSection}
-                  showShapeSection={showShapeSection}
-                  showSVGSection={showSVGSection}
-                />
-              )}
+                const styleTab = tabIds.includes("style") ? (
+                  <StyleTab
+                    clipId={clipId}
+                    showTextSection={showTextSection}
+                    showShapeSection={showShapeSection}
+                    showSVGSection={showSVGSection}
+                  />
+                ) : null;
+
+                return showTextSection ? (
+                  <>
+                    {styleTab}
+                    {transformTab}
+                  </>
+                ) : (
+                  <>
+                    {transformTab}
+                    {styleTab}
+                  </>
+                );
+              })()}
 
               {tabIds.includes("color") && (
                 <ColorTab clipId={clipId} showColorGrading={showColorGrading} />
