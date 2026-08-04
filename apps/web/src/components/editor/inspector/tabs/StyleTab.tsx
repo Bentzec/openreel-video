@@ -17,8 +17,15 @@ export const StyleTab: React.FC<StyleTabProps> = ({
 }) => {
   return (
     <>
+      {/* Open by default: this section holds the text content itself, so a
+          collapsed header leaves a new text clip with no visible way to type
+          into it. Shape/SVG stay collapsed — their content is not typed. */}
       {showTextSection && (
-        <InspectorSection title="Text Properties" sectionId="text-properties">
+        <InspectorSection
+          title="Text Properties"
+          sectionId="text-properties"
+          defaultOpen
+        >
           <TextSection clipId={clipId} />
         </InspectorSection>
       )}
