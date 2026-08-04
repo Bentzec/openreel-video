@@ -29,13 +29,15 @@
     --inspector-w: 360px;
     --topbar-h: 40px;
     --toolnav-h: 64px;
-
-    color-scheme: dark;
   }
 
   /* light theme — Claude Design "Editor" mock (emerald brand accent, Inter) */
   :root,
   [data-theme="light"] {
+    /* Drives native UI (scrollbars, form controls, autofill) so they follow
+       the theme instead of always rendering dark. */
+    color-scheme: light;
+
     --bg: #f4f4f6;            /* window / app background */
     --bg-1: #ffffff;          /* cards & elevated surfaces */
     --bg-2: #f0f0f3;          /* recessed insets, pills, search fields */
@@ -77,6 +79,8 @@
   /* dark theme — cinematic, near-black like reference */
   [data-theme="dark"],
   .dark {
+    color-scheme: dark;
+
     --bg: oklch(0.12 0.005 240);
     --bg-1: oklch(0.16 0.006 240);
     --bg-2: oklch(0.2 0.007 240);

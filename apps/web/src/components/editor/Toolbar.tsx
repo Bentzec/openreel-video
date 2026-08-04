@@ -4,9 +4,12 @@ import {
   Settings,
   MoreHorizontal,
   Video,
+  Sun,
+  Moon,
 } from "@/icons/lucide-compat";
 import { useProjectStore } from "../../stores/project-store";
 import { useUIStore } from "../../stores/ui-store";
+import { useThemeStore } from "../../stores/theme-store";
 import { useRouter } from "../../hooks/use-router";
 import {
   getExportEngine,
@@ -39,6 +42,7 @@ import {
   ToolcraftIconButton,
   ToolcraftText as Text,
   ToolcraftTextInputControl,
+  ToolcraftTooltip as Tooltip,
 } from "@openreel/ui";
 
 type ExportType =
@@ -64,6 +68,8 @@ export const Toolbar: React.FC = () => {
     closeModal,
   } = useUIStore();
   const { navigate } = useRouter();
+  const isDark = useThemeStore((state) => state.isDark);
+  const setThemeMode = useThemeStore((state) => state.setMode);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isCompressOpen, setIsCompressOpen] = useState(false);
@@ -445,8 +451,35 @@ export const Toolbar: React.FC = () => {
         <ProjectSwitcher />
       </div>
 
-      {/* ─── Right: export only ───────────────────────────────── */}
-      <div className="flex items-center justify-end shrink-0">
+      {/* ─── Right: theme toggle + export ─────────────────────── */}
+      <div className="flex items-center justify-end gap-2 shrink-0">
+        {/* Day / night toggle.
+            Deliberately two-state instead of reusing the store's toggleTheme(),
+            which cycles light → dark → auto: a single button that lands on
+            "auto" appears to do nothing whenever the OS preference already
+            matches the current look, which reads as a broken button. The
+            three-state cycle including "auto" stays available in the editor
+            rail's overflow menu. */}
+        <Tooltip
+          content={isDark ? "Modo día" : "Modo noche"}
+          placement="below"
+        >
+          <ToolcraftIconButton
+            label={isDark ? "Cambiar a modo día" : "Cambiar a modo noche"}
+            icon={
+              isDark ? (
+                <Sun size={16} aria-hidden />
+              ) : (
+                <Moon size={16} aria-hidden />
+              )
+            }
+            size="sm"
+            variant="ghost"
+            onClick={() => setThemeMode(isDark ? "light" : "dark")}
+            className="text-fg-3 hover:text-fg"
+          />
+        </Tooltip>
+
         {/* Export */}
         {exportState.isExporting ? (
           <button
