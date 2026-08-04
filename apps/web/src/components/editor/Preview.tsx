@@ -90,6 +90,7 @@ import {
   CropModeView,
   MotionPathOverlay,
   ParticleRenderer,
+  SelectionHandles,
   computePreviewResolution,
   PREVIEW_MAX_DIMENSION,
   previewQualityScale,
@@ -7790,15 +7791,15 @@ export const Preview: React.FC = () => {
               }}
             >
               {/* Selection border */}
-              <div className="absolute inset-0 border-2 border-primary pointer-events-none" />
+              <div className="absolute inset-0 border border-primary pointer-events-none" />
 
               {/* Move handle (center) */}
               <div
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-primary/80 rounded-full flex items-center justify-center cursor-move pointer-events-auto hover:bg-primary transition-colors"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-primary/80 rounded-full flex items-center justify-center cursor-move pointer-events-auto hover:bg-primary transition-colors"
                 onMouseDown={handleClipMouseDown}
                 title="Drag to move"
               >
-                <Move size={14} className="text-white" />
+                <Move size={11} className="text-white" />
               </div>
 
               {/* Aspect ratio lock toggle */}
@@ -7815,40 +7816,10 @@ export const Preview: React.FC = () => {
                 {lockAspectRatio ? "🔒 Locked" : "🔓 Free"}
               </Button>
 
-              {/* Corner resize handles */}
-              <div
-                className="absolute -left-2 -top-2 w-4 h-4 bg-white border-2 border-primary rounded-sm cursor-nw-resize pointer-events-auto hover:bg-primary hover:border-white transition-colors"
-                onMouseDown={(e) => handleHandleMouseDown(e, "nw")}
-              />
-              <div
-                className="absolute -right-2 -top-2 w-4 h-4 bg-white border-2 border-primary rounded-sm cursor-ne-resize pointer-events-auto hover:bg-primary hover:border-white transition-colors"
-                onMouseDown={(e) => handleHandleMouseDown(e, "ne")}
-              />
-              <div
-                className="absolute -left-2 -bottom-2 w-4 h-4 bg-white border-2 border-primary rounded-sm cursor-sw-resize pointer-events-auto hover:bg-primary hover:border-white transition-colors"
-                onMouseDown={(e) => handleHandleMouseDown(e, "sw")}
-              />
-              <div
-                className="absolute -right-2 -bottom-2 w-4 h-4 bg-white border-2 border-primary rounded-sm cursor-se-resize pointer-events-auto hover:bg-primary hover:border-white transition-colors"
-                onMouseDown={(e) => handleHandleMouseDown(e, "se")}
-              />
-
-              {/* Edge resize handles */}
-              <div
-                className="absolute left-1/2 -translate-x-1/2 -top-2 w-6 h-4 bg-white border-2 border-primary rounded-sm cursor-n-resize pointer-events-auto hover:bg-primary hover:border-white transition-colors"
-                onMouseDown={(e) => handleHandleMouseDown(e, "n")}
-              />
-              <div
-                className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-6 h-4 bg-white border-2 border-primary rounded-sm cursor-s-resize pointer-events-auto hover:bg-primary hover:border-white transition-colors"
-                onMouseDown={(e) => handleHandleMouseDown(e, "s")}
-              />
-              <div
-                className="absolute top-1/2 -translate-y-1/2 -left-2 w-4 h-6 bg-white border-2 border-primary rounded-sm cursor-w-resize pointer-events-auto hover:bg-primary hover:border-white transition-colors"
-                onMouseDown={(e) => handleHandleMouseDown(e, "w")}
-              />
-              <div
-                className="absolute top-1/2 -translate-y-1/2 -right-2 w-4 h-6 bg-white border-2 border-primary rounded-sm cursor-e-resize pointer-events-auto hover:bg-primary hover:border-white transition-colors"
-                onMouseDown={(e) => handleHandleMouseDown(e, "e")}
+              <SelectionHandles
+                borderClass="border-primary"
+                hoverFillClass="hover:bg-primary"
+                onHandleMouseDown={handleHandleMouseDown}
               />
             </div>
           )}
@@ -7865,15 +7836,15 @@ export const Preview: React.FC = () => {
               }}
             >
               {/* Selection border - cyan for text clips */}
-              <div className="absolute inset-0 border-2 border-cyan-500 pointer-events-none" />
+              <div className="absolute inset-0 border border-cyan-500 pointer-events-none" />
 
               {/* Move handle (center) */}
               <div
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-cyan-500/80 rounded-full flex items-center justify-center cursor-move pointer-events-auto hover:bg-cyan-500 transition-colors"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-cyan-500/80 rounded-full flex items-center justify-center cursor-move pointer-events-auto hover:bg-cyan-500 transition-colors"
                 onMouseDown={handleTextClipMouseDown}
                 title="Drag to move text"
               >
-                <Move size={14} className="text-white" />
+                <Move size={11} className="text-white" />
               </div>
 
               {/* Aspect ratio lock toggle */}
@@ -7890,40 +7861,10 @@ export const Preview: React.FC = () => {
                 {lockAspectRatio ? "🔒 Locked" : "🔓 Free"}
               </Button>
 
-              {/* Corner resize handles */}
-              <div
-                className="absolute -left-2 -top-2 w-4 h-4 bg-white border-2 border-cyan-500 rounded-sm cursor-nw-resize pointer-events-auto hover:bg-cyan-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleTextHandleMouseDown(e, "nw")}
-              />
-              <div
-                className="absolute -right-2 -top-2 w-4 h-4 bg-white border-2 border-cyan-500 rounded-sm cursor-ne-resize pointer-events-auto hover:bg-cyan-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleTextHandleMouseDown(e, "ne")}
-              />
-              <div
-                className="absolute -left-2 -bottom-2 w-4 h-4 bg-white border-2 border-cyan-500 rounded-sm cursor-sw-resize pointer-events-auto hover:bg-cyan-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleTextHandleMouseDown(e, "sw")}
-              />
-              <div
-                className="absolute -right-2 -bottom-2 w-4 h-4 bg-white border-2 border-cyan-500 rounded-sm cursor-se-resize pointer-events-auto hover:bg-cyan-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleTextHandleMouseDown(e, "se")}
-              />
-
-              {/* Edge resize handles */}
-              <div
-                className="absolute left-1/2 -translate-x-1/2 -top-2 w-6 h-4 bg-white border-2 border-cyan-500 rounded-sm cursor-n-resize pointer-events-auto hover:bg-cyan-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleTextHandleMouseDown(e, "n")}
-              />
-              <div
-                className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-6 h-4 bg-white border-2 border-cyan-500 rounded-sm cursor-s-resize pointer-events-auto hover:bg-cyan-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleTextHandleMouseDown(e, "s")}
-              />
-              <div
-                className="absolute top-1/2 -translate-y-1/2 -left-2 w-4 h-6 bg-white border-2 border-cyan-500 rounded-sm cursor-w-resize pointer-events-auto hover:bg-cyan-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleTextHandleMouseDown(e, "w")}
-              />
-              <div
-                className="absolute top-1/2 -translate-y-1/2 -right-2 w-4 h-6 bg-white border-2 border-cyan-500 rounded-sm cursor-e-resize pointer-events-auto hover:bg-cyan-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleTextHandleMouseDown(e, "e")}
+              <SelectionHandles
+                borderClass="border-cyan-500"
+                hoverFillClass="hover:bg-cyan-500"
+                onHandleMouseDown={handleTextHandleMouseDown}
               />
             </div>
           )}
@@ -7940,16 +7881,16 @@ export const Preview: React.FC = () => {
               }}
             >
               {selectedShapeClip.type !== "svg" && (
-                <div className="absolute inset-0 border-2 border-green-500 pointer-events-none" />
+                <div className="absolute inset-0 border border-green-500 pointer-events-none" />
               )}
 
               {/* Move handle (center) */}
               <div
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-green-500/80 rounded-full flex items-center justify-center cursor-move pointer-events-auto hover:bg-green-500 transition-colors"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-green-500/80 rounded-full flex items-center justify-center cursor-move pointer-events-auto hover:bg-green-500 transition-colors"
                 onMouseDown={handleShapeClipMouseDown}
                 title="Drag to move shape"
               >
-                <Move size={14} className="text-white" />
+                <Move size={11} className="text-white" />
               </div>
 
               {/* Aspect ratio lock toggle */}
@@ -7966,40 +7907,10 @@ export const Preview: React.FC = () => {
                 {lockAspectRatio ? "🔒 Locked" : "🔓 Free"}
               </Button>
 
-              {/* Corner resize handles */}
-              <div
-                className="absolute -left-2 -top-2 w-4 h-4 bg-white border-2 border-green-500 rounded-sm cursor-nw-resize pointer-events-auto hover:bg-green-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleShapeHandleMouseDown(e, "nw")}
-              />
-              <div
-                className="absolute -right-2 -top-2 w-4 h-4 bg-white border-2 border-green-500 rounded-sm cursor-ne-resize pointer-events-auto hover:bg-green-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleShapeHandleMouseDown(e, "ne")}
-              />
-              <div
-                className="absolute -left-2 -bottom-2 w-4 h-4 bg-white border-2 border-green-500 rounded-sm cursor-sw-resize pointer-events-auto hover:bg-green-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleShapeHandleMouseDown(e, "sw")}
-              />
-              <div
-                className="absolute -right-2 -bottom-2 w-4 h-4 bg-white border-2 border-green-500 rounded-sm cursor-se-resize pointer-events-auto hover:bg-green-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleShapeHandleMouseDown(e, "se")}
-              />
-
-              {/* Edge resize handles */}
-              <div
-                className="absolute left-1/2 -translate-x-1/2 -top-2 w-6 h-4 bg-white border-2 border-green-500 rounded-sm cursor-n-resize pointer-events-auto hover:bg-green-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleShapeHandleMouseDown(e, "n")}
-              />
-              <div
-                className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-6 h-4 bg-white border-2 border-green-500 rounded-sm cursor-s-resize pointer-events-auto hover:bg-green-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleShapeHandleMouseDown(e, "s")}
-              />
-              <div
-                className="absolute top-1/2 -translate-y-1/2 -left-2 w-4 h-6 bg-white border-2 border-green-500 rounded-sm cursor-w-resize pointer-events-auto hover:bg-green-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleShapeHandleMouseDown(e, "w")}
-              />
-              <div
-                className="absolute top-1/2 -translate-y-1/2 -right-2 w-4 h-6 bg-white border-2 border-green-500 rounded-sm cursor-e-resize pointer-events-auto hover:bg-green-500 hover:border-white transition-colors"
-                onMouseDown={(e) => handleShapeHandleMouseDown(e, "e")}
+              <SelectionHandles
+                borderClass="border-green-500"
+                hoverFillClass="hover:bg-green-500"
+                onHandleMouseDown={handleShapeHandleMouseDown}
               />
             </div>
           )}
