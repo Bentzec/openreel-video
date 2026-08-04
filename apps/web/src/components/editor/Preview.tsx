@@ -845,6 +845,12 @@ export const Preview: React.FC = () => {
     null,
   );
   const decodeRequestSeqRef = useRef(0);
+  /**
+   * When the last seek decode was allowed to start. Used to pace decodes during
+   * a continuous drag instead of only firing once the drag stops — see
+   * SCRUB_DECODE_INTERVAL_MS.
+   */
+  const lastDecodeStartRef = useRef(0);
   const scrubVideoReleaseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -1038,6 +1044,28 @@ export const Preview: React.FC = () => {
   // Throttle store updates during interaction (update at most every 32ms ~30fps)
   const lastStoreUpdateRef = useRef<number>(0);
   const STORE_UPDATE_THROTTLE_MS = 32;
+  /**
+   * Minimum gap between seek decodes while scrubbing.
+   *
+   * This used to be a plain trailing debounce, which meant a decode only ever
+   * started once the playhead stopped moving: dragging the playhead showed a
+   * frozen frame for the whole gesture and only caught up on release. Pacing
+   * the decodes instead keeps frames coming during the drag — the first move
+   * decodes immediately, and superseded requests are still dropped by the
+   * existing decodeRequestSeqRef staleness check, so nothing queues up.
+   */
+  const SCRUB_DECODE_INTERVAL_MS = 32;
+  /**
+   * Ceiling for the opportunistic "frame was presented" wait after a seek.
+   *
+   * Was 300ms. Since the wait is a nicety rather than a correctness gate — the
+   * "seeked" event already means the frame is decoded — a long ceiling turns
+   * into 300ms of dead time per scrub frame on any browser or power state that
+   * doesn't present frames for a detached, paused video element.
+   */
+  const PRESENT_WAIT_MS = 32;
+  /** Same reasoning for the readyState backstop, which was 250ms. */
+  const DATA_WAIT_MS = 64;
   // Throttle playhead updates during playback to reduce React re-renders.
   // The interval follows the project timebase so 60 fps projects publish a
   // 60 Hz playhead instead of being capped at 30 Hz.
@@ -2385,11 +2413,21 @@ export const Preview: React.FC = () => {
       decodeDebounceResolveRef.current?.(null);
       decodeDebounceResolveRef.current = null;
 
+      // Pace rather than debounce: run now if enough time has passed since the
+      // last decode, otherwise wait only for the remainder of the interval.
+      const elapsedSinceDecode =
+        performance.now() - lastDecodeStartRef.current;
+      const decodeDelay = Math.max(
+        0,
+        SCRUB_DECODE_INTERVAL_MS - elapsedSinceDecode,
+      );
+
       return new Promise<ImageBitmap | null>((resolve) => {
         decodeDebounceResolveRef.current = resolve;
         decodeDebounceRef.current = setTimeout(async () => {
           decodeDebounceRef.current = null;
           decodeDebounceResolveRef.current = null;
+          lastDecodeStartRef.current = performance.now();
 
           if (isStaleRequest()) {
             resolve(null);
@@ -2485,6 +2523,13 @@ export const Preview: React.FC = () => {
               return;
             }
 
+            // requestVideoFrameCallback only fires when the compositor actually
+            // presents a frame. These video elements are created detached and
+            // stay paused, so presentation is not guaranteed — when it doesn't
+            // happen this wait burns its entire timeout on every scrub frame.
+            // The preceding "seeked" event already guarantees the frame is
+            // decoded and safe to draw, so this is only a short opportunistic
+            // wait to avoid the occasional stale paint, never a hard gate.
             await new Promise<void>((res) => {
               if (!("requestVideoFrameCallback" in video)) {
                 res();
@@ -2501,7 +2546,7 @@ export const Preview: React.FC = () => {
               };
 
               video.requestVideoFrameCallback(finish);
-              timeoutId = setTimeout(finish, 300);
+              timeoutId = setTimeout(finish, PRESENT_WAIT_MS);
             });
 
             if (isStaleRequest()) {
@@ -2528,7 +2573,7 @@ export const Preview: React.FC = () => {
 
               video.addEventListener("loadeddata", finish);
               video.addEventListener("canplay", finish);
-              timeoutId = setTimeout(finish, 250);
+              timeoutId = setTimeout(finish, DATA_WAIT_MS);
             });
 
             if (isStaleRequest()) {
@@ -2553,7 +2598,7 @@ export const Preview: React.FC = () => {
             scheduleScrubVideoRelease();
             resolve(null);
           }
-        }, 50);
+        }, decodeDelay);
       });
     },
     [
