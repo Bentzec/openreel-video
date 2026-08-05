@@ -17,6 +17,8 @@ import {
   HelpCircle,
   FileCode,
   Command,
+  Save,
+  FolderOpen,
 } from "@/icons/lucide-compat";
 import { useProjectStore } from "../../stores/project-store";
 import { useUIStore } from "../../stores/ui-store";
@@ -48,7 +50,13 @@ const RailButton: React.FC<{
 );
 
 export const EditorActionRail: React.FC = () => {
-  const { undo, redo, createMotionComposition } = useProjectStore();
+  const {
+    undo,
+    redo,
+    createMotionComposition,
+    saveProjectToFile,
+    openProjectFromFile,
+  } = useProjectStore();
   const {
     openModal,
     toggleKeyframeEditor,
@@ -179,6 +187,21 @@ export const EditorActionRail: React.FC = () => {
         hasChevron={false}
         menuWidth={224}
         items={[
+          {
+            label: "Save project to file",
+            icon: <Save size={14} aria-hidden />,
+            onClick: () => {
+              void saveProjectToFile(false);
+            },
+          },
+          {
+            label: "Open project file",
+            icon: <FolderOpen size={14} aria-hidden />,
+            onClick: () => {
+              void openProjectFromFile();
+            },
+          },
+          { type: "divider" },
           {
             label: "Settings & API keys",
             icon: <Settings size={14} aria-hidden />,

@@ -6,6 +6,7 @@ import {
 import { useProjectStore } from "../stores/project-store";
 import { useUIStore } from "../stores/ui-store";
 import { useTimelineStore } from "../stores/timeline-store";
+import { toast } from "../stores/notification-store";
 import {
   deleteTimelineItem,
   duplicateTimelineItem,
@@ -30,6 +31,8 @@ export function useKeyboardShortcuts() {
     pasteClips,
     project,
     addMarker,
+    saveProjectToFile,
+    openProjectFromFile,
   } = useProjectStore();
 
   const { getSelectedClipIds, clearSelection, toggleSnap, selectMultiple } =
@@ -266,7 +269,41 @@ export function useKeyboardShortcuts() {
     setShowShortcutsOverlay(true);
   }, []);
 
-  const handleSave = useCallback(() => {}, []);
+  // The picker only opens from a user gesture, which a keydown satisfies.
+  // Cancelling it resolves false rather than throwing, so silence is the
+  // correct feedback there — only a real failure deserves a toast.
+  const runSave = useCallback(
+    async (saveAs: boolean) => {
+      try {
+        if (await saveProjectToFile(saveAs)) {
+          toast.success("Project saved", "Your edit was written to the file.");
+        }
+      } catch {
+        toast.error("Could not save", "The project file was not written.");
+      }
+    },
+    [saveProjectToFile],
+  );
+
+  const handleSave = useCallback(() => {
+    void runSave(false);
+  }, [runSave]);
+
+  const handleSaveAs = useCallback(() => {
+    void runSave(true);
+  }, [runSave]);
+
+  const handleOpen = useCallback(() => {
+    void (async () => {
+      try {
+        if (await openProjectFromFile()) {
+          toast.success("Project opened", "Loaded from your project file.");
+        }
+      } catch {
+        toast.error("Could not open", "That project file could not be read.");
+      }
+    })();
+  }, [openProjectFromFile]);
 
   const handleExport = useCallback(() => {}, []);
 
@@ -310,6 +347,8 @@ export function useKeyboardShortcuts() {
       ["timeline.fitTimeline", handleFitTimeline],
       ["view.showShortcuts", handleShowShortcuts],
       ["file.save", handleSave],
+      ["file.saveAs", handleSaveAs],
+      ["file.open", handleOpen],
       ["file.export", handleExport],
       ["tools.addText", handleAddText],
       ["tools.addMarker", handleAddMarker],
@@ -356,6 +395,8 @@ export function useKeyboardShortcuts() {
     handleFitTimeline,
     handleShowShortcuts,
     handleSave,
+    handleSaveAs,
+    handleOpen,
     handleExport,
     handleAddText,
     handleAddMarker,
