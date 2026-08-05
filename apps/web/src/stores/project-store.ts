@@ -622,6 +622,10 @@ export interface ProjectState {
   recoverFromAutoSave: (saveId: string) => Promise<boolean>;
   forceSave: () => Promise<void>;
   getFullProject: () => Project;
+
+  // Project files (.oreel)
+  saveProjectToFile: (saveAs?: boolean) => Promise<boolean>;
+  openProjectFromFile: () => Promise<boolean>;
 }
 
 function motionCompositionsEqual(
@@ -3083,6 +3087,62 @@ export const useProjectStore = create<ProjectState>()(
           svgClips: graphicsEngine?.getAllSVGClips() || [],
           stickerClips: graphicsEngine?.getAllStickerClips() || [],
         };
+      },
+
+      /**
+       * Write the project to a .oreel file the user picks.
+       *
+       * Goes through getFullProject() rather than the raw store project: text,
+       * shape, SVG and sticker clips live in their engines, not in project
+       * state, so saving the store copy directly would write a file with every
+       * title silently missing.
+       *
+       * The file holds the edit, not the footage — media blobs stay in
+       * IndexedDB and are referenced by id. It is a backup of the montage on
+       * this machine, not a portable package.
+       */
+      saveProjectToFile: async (saveAs = false) => {
+        const fullProject = get().getFullProject();
+        try {
+          return saveAs
+            ? await projectManager.saveProjectAs(fullProject)
+            : await projectManager.saveProject(fullProject);
+        } catch (error) {
+          set({ error: error instanceof Error ? error.message : String(error) });
+          return false;
+        }
+      },
+
+      /**
+       * Load a .oreel the user picks, re-attaching its media from IndexedDB.
+       *
+       * Mirrors recoverFromAutoSave's rehydration: the file carries media ids,
+       * so the blobs have to be looked up by project id and stitched back in
+       * before the project is handed to loadProject.
+       */
+      openProjectFromFile: async () => {
+        let opened: Project | null = null;
+        try {
+          opened = await projectManager.openProject();
+        } catch (error) {
+          set({ error: error instanceof Error ? error.message : String(error) });
+          return false;
+        }
+        if (!opened) return false;
+
+        const storedMedia = await loadProjectMedia(opened.id);
+        const blobMap = new Map(storedMedia.map((m) => [m.id, m.blob]));
+        const restoredItems = await Promise.all(
+          opened.mediaLibrary.items.map((item) =>
+            restoreMediaItem(item, blobMap.get(item.id)),
+          ),
+        );
+
+        get().loadProject({
+          ...opened,
+          mediaLibrary: { ...opened.mediaLibrary, items: restoredItems },
+        });
+        return true;
       },
 
       getEditingTemplates: () => [...getBuiltInEditingTemplates()],
